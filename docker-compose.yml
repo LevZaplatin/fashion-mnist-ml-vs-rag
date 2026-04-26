@@ -1,0 +1,73 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+  trainer:
+    build: .
+    command: python -m fashion_compare.classifier.train
+    env_file: .env.example
+    environment:
+      QDRANT_HOST: qdrant
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./reports:/app/reports
+
+  rag-indexer:
+    build: .
+    command: python -m fashion_compare.rag.index
+    env_file: .env.example
+    environment:
+      QDRANT_HOST: qdrant
+      EMBEDDING_MODE: ${EMBEDDING_MODE:-raw784}
+    depends_on:
+      - qdrant
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./reports:/app/reports
+
+  classifier-api:
+    build: .
+    command: uvicorn fashion_compare.classifier.api:app --host 0.0.0.0 --port 8001
+    env_file: .env.example
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+
+  rag-api:
+    build: .
+    command: uvicorn fashion_compare.rag.api:app --host 0.0.0.0 --port 8002
+    env_file: .env.example
+    environment:
+      QDRANT_HOST: qdrant
+    depends_on:
+      - qdrant
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+
+  evaluator:
+    build: .
+    command: python -m fashion_compare.evaluation.compare
+    env_file: .env.example
+    environment:
+      QDRANT_HOST: qdrant
+    depends_on:
+      - qdrant
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./reports:/app/reports
+
+volumes:
+  qdrant_storage:
+
