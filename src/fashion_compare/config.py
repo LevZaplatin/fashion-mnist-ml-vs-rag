@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     validation_fraction: float = Field(default=0.1, alias="VALIDATION_FRACTION")
     early_stopping_patience: int = Field(default=3, alias="EARLY_STOPPING_PATIENCE")
     num_workers: int = Field(default=0, alias="NUM_WORKERS")
+    autoencoder_epochs: int = Field(default=20, alias="AUTOENCODER_EPOCHS")
+    top_k_candidates: list[int] = Field(default=[3, 5, 7, 11, 15, 21], alias="TOP_K_CANDIDATES")
+    eval_workers: int = Field(default=4, alias="EVAL_WORKERS")
 
     @property
     def classifier_dir(self) -> Path:

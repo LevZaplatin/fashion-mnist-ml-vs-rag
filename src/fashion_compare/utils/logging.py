@@ -9,6 +9,10 @@ def configure_logging(level: str = "INFO") -> None:
         stream=sys.stdout,
         force=True,
     )
+    for name in ("httpx", "httpcore"):
+        noisy = logging.getLogger(name)
+        noisy.setLevel(logging.WARNING)
+        noisy.propagate = False
 
 
 def get_logger(name: str) -> logging.Logger:

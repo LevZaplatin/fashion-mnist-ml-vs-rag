@@ -31,6 +31,17 @@ services:
       - ./artifacts:/app/artifacts
       - ./reports:/app/reports
 
+  fitter:
+    build: .
+    command: python -m fashion_compare.rag.fit
+    env_file: .env.example
+    environment:
+      QDRANT_HOST: qdrant
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./reports:/app/reports
+
   classifier-api:
     build: .
     command: uvicorn fashion_compare.classifier.api:app --host 0.0.0.0 --port 8001

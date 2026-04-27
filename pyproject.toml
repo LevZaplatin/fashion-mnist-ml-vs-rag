@@ -16,6 +16,9 @@ dependencies = [
   "matplotlib>=3.9",
   "pillow>=10.3",
   "numpy>=1.26",
+  "scikit-image>=0.23",
+  "scipy>=1.13",
+  "joblib>=1.4",
 ]
 
 [project.optional-dependencies]

@@ -26,3 +26,20 @@ def embed_cnn(image: Any, model: FashionCNN, device: torch.device | str = "cpu")
     embedding = model.forward_embedding(tensor).detach().cpu().numpy()[0]
     return l2_normalize(embedding.astype(np.float32))
 
+
+from fashion_compare.models.registry import EmbeddingMode, register
+
+register(EmbeddingMode(
+    name="raw784",
+    dim=784,
+    embed_fn=embed_raw784,
+    requires_fit=False,
+))
+
+register(EmbeddingMode(
+    name="cnn_embedding",
+    dim=FashionCNN.embedding_dim,
+    embed_fn=embed_cnn,
+    requires_fit=False,
+))
+

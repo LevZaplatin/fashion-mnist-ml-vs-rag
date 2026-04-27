@@ -1,21 +1,29 @@
+from __future__ import annotations
+
 from typing import Any
 
 import torch
 
+import fashion_compare.models  # noqa: F401 — populate registry
 from fashion_compare.classifier.predict import load_classifier
-from fashion_compare.models.embeddings import embed_cnn, embed_raw784
+from fashion_compare.config import get_settings
+from fashion_compare.models.embeddings import embed_cnn
+from fashion_compare.models.registry import get_mode
 from fashion_compare.rag.qdrant_client import collection_name, get_qdrant_client
 from fashion_compare.rag.vote import vote_neighbors
 
 
 def embed_query(image: Any, mode: str) -> list[float]:
-    if mode == "raw784":
-        return embed_raw784(image).tolist()
     if mode == "cnn_embedding":
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model, _ = load_classifier(device)
         return embed_cnn(image, model=model, device=device).tolist()
-    raise ValueError(f"Unsupported embedding mode: {mode}")
+    mode_def = get_mode(mode)
+    kwargs: dict[str, Any] = {}
+    if mode_def.requires_fit:
+        settings = get_settings()
+        kwargs["artifact_dir"] = settings.rag_dir / mode
+    return mode_def.embed_fn(image, **kwargs).tolist()
 
 
 def retrieve_neighbors(image: Any, mode: str = "raw784", top_k: int = 7) -> list[dict[str, Any]]:

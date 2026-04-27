@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from fashion_compare.config import get_settings
 from fashion_compare.labels import labels_metadata
-from fashion_compare.rag.qdrant_client import COLLECTIONS
+from fashion_compare.models.registry import all_mode_names
 from fashion_compare.rag.retrieve import predict_rag
 from fashion_compare.utils.image_io import base64_to_image, load_image_bytes, pixel_array_to_numpy
 
@@ -25,7 +25,7 @@ def health() -> dict[str, str]:
 
 @app.get("/metadata")
 def metadata() -> dict[str, Any]:
-    return {"system": "rag", "labels": labels_metadata(), "collections": COLLECTIONS}
+    return {"system": "rag", "labels": labels_metadata(), "modes": all_mode_names()}
 
 
 async def _parse_request_image(request: Request, image: UploadFile | None) -> Any:
